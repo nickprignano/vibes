@@ -1,7 +1,9 @@
 // Service worker: keeps a copy of every file so the installed app works offline.
-// VERSION, FILES and EXTRA are written by `node tools/sw-version.mjs`; a test fails if they're stale.
+// VERSION, FILES, AUDIO_VERSION, AUDIO and EXTRA are written by `node tools/sw-version.mjs`;
+// a test fails if they're stale.
 
-const VERSION = 'ca29a745267c';
+const VERSION = '084d033dbfab';
+const AUDIO_VERSION = 'daf3c0d48ac4';
 const FILES = [
   'icons/apple-touch-icon.png',
   'icons/icon-192.png',
@@ -16,6 +18,14 @@ const FILES = [
   'src/sound.js',
   'src/sounds.js',
   'styles.css',
+];
+// The sound files (about 0.5 MB each), cached apart and only when they change.
+const AUDIO = [
+  'audio/bonfire.mp3',
+  'audio/night.mp3',
+  'audio/rain.mp3',
+  'audio/stream.mp3',
+  'audio/thunderstorm.mp3',
 ];
 // The shared theme and line-art library, pinned to a commit so they never change.
 const EXTRA = [
@@ -45,6 +55,7 @@ const EXTRA = [
   'https://cdn.jsdelivr.net/gh/nickprignano/prignano-theme@c799cd939ad41f46d0bf3863116e01cc2e573d58/art/styles/epicycles.js',
 ];
 const CACHE = `vibes-${VERSION}`;
+const AUDIO_CACHE = `vibes-audio-${AUDIO_VERSION}`;
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -53,6 +64,9 @@ self.addEventListener('install', (event) => {
       // cache: 'reload' skips the browser's HTTP cache, so a new version never keeps old files.
       await cache.addAll(FILES.map((url) => new Request(url, { cache: 'reload' })));
       await Promise.allSettled(EXTRA.map((url) => cache.add(url)));
+      // A sound file that fails to download is fetched when first played instead.
+      const audio = await caches.open(AUDIO_CACHE);
+      await Promise.allSettled(AUDIO.map(async (url) => (await audio.match(url)) || audio.add(new Request(url, { cache: 'reload' }))));
     })(),
   );
 });
@@ -60,7 +74,7 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     (async () => {
-      for (const key of await caches.keys()) if (key !== CACHE) await caches.delete(key);
+      for (const key of await caches.keys()) if (key !== CACHE && key !== AUDIO_CACHE) await caches.delete(key);
       await self.clients.claim();
     })(),
   );
@@ -80,7 +94,7 @@ self.addEventListener('fetch', (event) => {
       // Every page is the one app page, cached as "/".
       const cached = request.mode === 'navigate'
         ? await cache.match('/')
-        : await cache.match(request, { ignoreSearch: new URL(request.url).origin === location.origin });
+        : await caches.match(request, { ignoreSearch: new URL(request.url).origin === location.origin });
       return cached || fetch(request);
     })(),
   );

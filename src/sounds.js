@@ -1,7 +1,8 @@
-// The ambient sounds, made in code: a seed in, stereo samples at 48 kHz out.
+// The ambient sounds. Most are made in code: a seed in, stereo samples at 48 kHz out.
 // One file for both sides: the page imports SOUNDS and gainFor, the audio thread
 // loads it as an AudioWorklet (the processor at the bottom), and Node tests the
 // generators, so loudness and noise color are checked without a browser.
+// The ones with a file play a seamless loop from audio/, made by tools/sound-files.mjs.
 
 export const SOUNDS = [
   { id: "white", name: "White noise" },
@@ -9,7 +10,18 @@ export const SOUNDS = [
   { id: "brown", name: "Brown noise" },
   { id: "ocean", name: "Ocean" },
   { id: "wind", name: "Wind" },
+  { id: "rain", name: "Rain", file: "audio/rain.mp3" },
+  { id: "stream", name: "Stream", file: "audio/stream.mp3" },
+  { id: "thunderstorm", name: "Thunderstorm", file: "audio/thunderstorm.mp3" },
+  { id: "bonfire", name: "Bonfire", file: "audio/bonfire.mp3" },
+  { id: "night", name: "Night", file: "audio/night.mp3" },
 ];
+
+// A sound file holds one LOOP-second loop starting LEAD seconds in, with the first
+// 2 * LEAD seconds repeated after it, so the loop is whole, with room to spare at both
+// ends, whether or not the browser trims the MP3's encoder padding (a few milliseconds).
+export const LOOP = 30;
+export const LEAD = 0.25;
 
 export const SAMPLE_RATE = 48000;
 

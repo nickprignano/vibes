@@ -1,5 +1,5 @@
 // Run with: node --test
-// The sounds' loudness and hearing rules (docs/SPEC.md, "v2: sound"), measured on
+// The generated sounds' loudness and hearing rules (docs/SPEC.md, "v2: sound"), measured on
 // the generators' stereo output at full volume, 48 kHz.
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
@@ -9,7 +9,9 @@ import { PEAK_DBFS, TARGET_LUFS, peakDb, render } from '../tools/sound-levels.mj
 
 const SECONDS = 30;
 
-for (const { id } of SOUNDS) {
+const MADE = SOUNDS.filter((s) => !s.file);
+
+for (const { id } of MADE) {
   test(`${id}: about -20 LUFS, no peaks over -6 dBFS, nothing sudden`, () => {
     for (const seed of [7, 8]) {
       const channels = render(id, { seconds: SECONDS, seed });
@@ -28,7 +30,7 @@ for (const { id } of SOUNDS) {
 }
 
 test('the same seed gives the same sound', () => {
-  for (const { id } of SOUNDS) {
+  for (const { id } of MADE) {
     const [a] = render(id, { seconds: 1, seed: 3 });
     const [b] = render(id, { seconds: 1, seed: 3 });
     assert.deepEqual(a, b, id);

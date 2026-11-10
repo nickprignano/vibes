@@ -7,7 +7,7 @@ import { readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const APP_FILE = /\.(html|css|m?js|json|webmanifest|png|svg)$/;
+const APP_FILE = /\.(html|css|m?js|json|webmanifest|png|svg|mp3)$/;
 
 // Files the site serves (not left out by .assetsignore) that the app needs, as site paths.
 export function appFiles(root = '.') {
@@ -72,10 +72,16 @@ export function themeUrl(root = '.') {
   return readFileSync(join(root, 'index.html'), 'utf8').match(/href="(https:\/\/cdn\.jsdelivr\.net\/gh\/nickprignano\/prignano-theme@[0-9a-f]{40})\/theme\.css"/)[1];
 }
 
-export function stamp(source, files, v, theme) {
+// Sound files go in their own cache, named by their own hash, so an app update doesn't
+// download them again.
+export function stamp(source, files, v, theme, root = '.') {
+  const audio = files.filter((f) => f.startsWith('audio/'));
+  const list = (name, items) => [new RegExp(`^const ${name} = \\[[\\s\\S]*?\\];$`, 'm'), `const ${name} = [\n${items.map((f) => `  '${f}',`).join('\n')}\n];`];
   return source
     .replace(/^const VERSION = .*$/m, `const VERSION = '${v}';`)
-    .replace(/^const FILES = \[[\s\S]*?\];$/m, `const FILES = [\n${files.map((f) => `  '${f}',`).join('\n')}\n];`)
+    .replace(/^const AUDIO_VERSION = .*$/m, `const AUDIO_VERSION = '${version(root, audio)}';`)
+    .replace(...list('FILES', files.filter((f) => !audio.includes(f))))
+    .replace(...list('AUDIO', audio))
     .replace(/^const EXTRA = \[[\s\S]*?\];$/m, `const EXTRA = [\n${THEME_FILES.map((f) => `  '${theme}/${f}',`).join('\n')}\n];`);
 }
 
