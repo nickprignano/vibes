@@ -308,6 +308,8 @@ if ("serviceWorker" in navigator) {
     };
     offer();
     reg.addEventListener("updatefound", () => reg.installing?.addEventListener("statechange", offer));
+    // An installed app is reopened rather than reloaded, so look for a new version on return.
+    document.addEventListener("visibilitychange", () => document.visibilityState === "visible" && reg.update());
   });
   navigator.serviceWorker.addEventListener("controllerchange", () => reloadOnUpdate && location.reload());
 }
