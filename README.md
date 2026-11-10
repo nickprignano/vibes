@@ -10,7 +10,11 @@ draws the project cards on prignano.ai: 18 styles, from flow trails and harmonog
 tilings, hyperbolic tilings and fractal curves.
 
 - **Controls:** left and right arrows (or a swipe) for previous and next, Space to pause, F or a
-  double-click for full screen, C for Calm. The bar and cursor hide after 3 seconds.
+  double-click for full screen, C for Calm, M for sound. The bar and cursor hide after 3 seconds.
+- **Sound:** white, pink and brown noise, rain, ocean, wind, stream and night crickets, all
+  generated live in code (no recordings), silent until you pick one, levelled to the same gentle
+  loudness with no sudden noises. `node tools/sound-levels.mjs --wav DIR` writes samples to
+  listen to.
 - **Easy on the eyes:** nothing flashes; striped and tiled patterns stay faint, wide and slow, and
   two of them never overlap during a hand-over. Every style is checked frame by frame by the
   theme's flash scan. Calm halves the speed and fades the lines; with reduced motion on, Vibes

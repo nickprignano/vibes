@@ -4,6 +4,7 @@ import { createPiece, STYLES } from "https://cdn.jsdelivr.net/gh/nickprignano/pr
 import { headerHtml } from "https://cdn.jsdelivr.net/gh/nickprignano/prignano-theme@c799cd939ad41f46d0bf3863116e01cc2e573d58/index.js";
 import { hueRate, nextStyles, opacities, pieceSeconds, transition } from "./cycle.js";
 import { load, save } from "./settings.js";
+import { setupSound } from "./sound.js";
 
 const PERIODIC = STYLES.filter((s) => s.pattern === "periodic").map((s) => s.id);
 const IDS = STYLES.map((s) => s.id);
@@ -16,6 +17,7 @@ const buttons = Object.fromEntries([...document.querySelectorAll("[data-do]")].m
 const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 
 const settings = load({ calm: false, awake: true, noteSeen: false });
+const sound = setupSound({ button: buttons.sound, dialog: document.getElementById("sound"), settings, save });
 const state = {
   history: [], // pieces shown so far: { style, seed }
   at: -1, // index in history of the piece on screen
@@ -224,13 +226,21 @@ const actions = {
     updateWakeLock();
   },
   fullscreen: toggleFullscreen,
+  sound: () => sound.open(),
   about: () => document.getElementById("about").showModal(),
 };
 for (const [name, button] of Object.entries(buttons)) button.addEventListener("click", () => actions[name]?.());
 
 document.addEventListener("keydown", (e) => {
   wake();
-  if (e.target.closest?.("dialog") || e.altKey || e.ctrlKey || e.metaKey) return;
+  if (e.altKey || e.ctrlKey || e.metaKey) return;
+  // M works everywhere, the Sound panel included.
+  if (e.key === "m" || e.key === "M") {
+    e.preventDefault();
+    if (!e.repeat) sound.toggle();
+    return;
+  }
+  if (e.target.closest?.("dialog")) return;
   const key = { ArrowLeft: "previous", ArrowRight: "next", " ": "pause", f: "fullscreen", F: "fullscreen", c: "calm", C: "calm" }[e.key];
   if (!key || (key === "pause" && state.reduceMotion)) return;
   if (key === "pause" && e.target.closest?.("button")) return; // Space on a button presses the button

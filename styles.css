@@ -49,6 +49,11 @@ dialog {
 dialog::backdrop { background: rgb(0 0 0 / 0.6); }
 dialog a { color: var(--accent); }
 #about-header { --ph-width: 100%; }
+#sound-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 4px; margin: 0 0 12px; padding: 0; border: 0; }
+#sound-list label, #volume-label { display: flex; align-items: center; gap: 10px; min-height: 44px; }
+#sound-list input { width: 20px; height: 20px; margin: 0; accent-color: var(--accent); }
+#volume { flex: 1; min-width: 160px; accent-color: var(--accent); }
+.hint { color: var(--muted); }
 
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
