@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Vibes</title>
+  <meta name="description" content="Our line art, playing forever, like an old-school screensaver.">
+  <meta name="theme-color" content="#000000">
+  <!-- Installable app (PWA): manifest, icons, iOS home-screen tags. sw.js keeps it working offline. -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Vibes">
+  <!-- The shared site theme, always in its dark colors here. styles.css has the same colors as a fallback. -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/nickprignano/prignano-theme@c799cd939ad41f46d0bf3863116e01cc2e573d58/theme.css">
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="src/main.js"></script>
+</head>
+<body>
+  <h1 class="visually-hidden">Vibes</h1>
+  <div id="art">
+    <canvas id="a" aria-hidden="true"></canvas>
+    <canvas id="b" aria-hidden="true"></canvas>
+  </div>
+
+  <div id="note" class="panel" role="status" hidden>
+    <p>Moving patterns. Turn on Calm if motion bothers you.</p>
+    <button type="button" id="note-calm">Calm</button>
+    <button type="button" id="note-ok">OK</button>
+  </div>
+
+  <nav id="bar" class="panel" aria-label="Vibes controls">
+    <span id="label" aria-live="off"></span>
+    <button type="button" data-do="previous" aria-label="Previous piece">‹</button>
+    <button type="button" data-do="pause" aria-pressed="false">Pause</button>
+    <button type="button" data-do="next" aria-label="Next piece">›</button>
+    <button type="button" data-do="calm" aria-pressed="false">Calm</button>
+    <button type="button" data-do="awake" aria-pressed="true">Keep screen on</button>
+    <button type="button" data-do="fullscreen" aria-pressed="false">Full screen</button>
+    <button type="button" data-do="about">About</button>
+    <button type="button" data-do="update" hidden>Update</button>
+  </nav>
+
+  <dialog id="about" aria-labelledby="about-title">
+    <div id="about-header"></div>
+    <h2 id="about-title">About Vibes</h2>
+    <p>Our line art, playing forever, like an old-school screensaver. Each piece grows in, drifts for a while, then dissolves into the next, with a new random seed every time.</p>
+    <p>The art is drawn live from the same library as the project cards on prignano.ai: eighteen styles, from flow trails, wave lines and harmonographs to gear curves, roses, knots, wire solids, strange attractors, times tables, star polygons, circle lattices, Islamic-style star tilings, a rhomb tiling that never repeats, hyperbolic tilings, Voronoi cells, fractal curves, meanders and epicycles.</p>
+    <p><b>Keys:</b> left and right arrows for previous and next, Space to pause, F for full screen, C for Calm. On a phone, swipe.</p>
+    <p><b>Easy on the eyes:</b> nothing flashes, striped patterns stay faint, wide and slow, and every piece is checked frame by frame before it ships. Calm halves the speed and fades the lines. If your device asks for reduced motion, Vibes shows still pieces you can step through.</p>
+    <p><b>Private:</b> nothing leaves your device. No accounts, no analytics, no tracking. Your settings stay on this device.</p>
+    <p>Original work under the MIT license. <a href="https://github.com/nickprignano/vibes">Source on GitHub</a>.</p>
+    <form method="dialog"><button>Close</button></form>
+  </dialog>
+</body>
+</html>

@@ -1,0 +1,57 @@
+/* Vibes is always dark: the art needs it. The bar uses prignano-theme's dark
+   tokens; the values here are the same, in case the theme can't load. */
+:root {
+  color-scheme: dark;
+  --bg: #0d1117;
+  --fg: #e6edf3;
+  --muted: #8b949e;
+  --card: #151b23;
+  --border: #2a313c;
+  --accent: #58a6ff;
+}
+html, body { margin: 0; height: 100%; background: #000; color: var(--fg); overflow: hidden; }
+body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+
+#art { position: fixed; inset: 0; touch-action: none; }
+#art canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+#a { z-index: 1; }
+#b { z-index: 0; opacity: 0; }
+
+.panel {
+  position: fixed; left: 0; right: 0; margin-inline: auto; width: fit-content; z-index: 2;
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px;
+  max-width: calc(100vw - 32px); box-sizing: border-box;
+  padding: 8px; border: 1px solid var(--border); border-radius: 14px;
+  background: var(--card); color: var(--fg);
+}
+#bar { bottom: max(16px, env(safe-area-inset-bottom)); transition: opacity 0.4s; }
+#note { top: max(16px, env(safe-area-inset-top)); }
+#note p { margin: 0 8px; }
+#label { color: var(--muted); padding: 0 8px; }
+
+button {
+  min-height: 44px; min-width: 44px; padding: 0 12px;
+  border: 1px solid var(--border); border-radius: 10px;
+  background: var(--bg); color: var(--fg); font: inherit; cursor: pointer;
+}
+button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+[hidden] { display: none !important; }
+
+/* After 3 seconds without input the bar and cursor hide. */
+body.idle #bar { opacity: 0; pointer-events: none; }
+body.idle { cursor: none; }
+
+dialog {
+  max-width: min(640px, calc(100vw - 32px)); max-height: calc(100vh - 32px); box-sizing: border-box;
+  border: 1px solid var(--border); border-radius: 14px; background: var(--card); color: var(--fg);
+}
+dialog::backdrop { background: rgb(0 0 0 / 0.6); }
+dialog a { color: var(--accent); }
+#about-header { --ph-width: 100%; }
+
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+@media (prefers-reduced-motion: reduce) {
+  #bar { transition: none; }
+}
