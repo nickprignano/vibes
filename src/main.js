@@ -202,13 +202,14 @@ async function toggleFullscreen() {
   }
 }
 
-// The bar and cursor hide after 3 seconds without input.
+// The bar and cursor hide after 3 seconds without input. A button clicked with the mouse keeps
+// focus, so only keyboard focus (focus-visible) holds the bar open.
 let idle = 0;
 function wake() {
   document.body.classList.remove("idle");
   clearTimeout(idle);
   idle = setTimeout(() => {
-    if (!bar.contains(document.activeElement) || document.activeElement === document.body) document.body.classList.add("idle");
+    if (!bar.contains(document.activeElement) || !document.activeElement.matches(":focus-visible")) document.body.classList.add("idle");
   }, 3000);
 }
 
