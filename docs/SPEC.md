@@ -283,8 +283,9 @@ Instrumentals, a mood per style and art that reacts to sound come later.
 
 ### What you hear
 
-Five ambient sounds, one at a time, all made live in code with Web Audio: no recordings,
-nothing to download or license. The nature sounds are random as they go, so they never loop.
+Ten ambient sounds, one at a time. Five are made live in code with Web Audio; they are random as
+they go, so they never loop. The other five are 30-second seamless loops from files (see
+"Sound files" below).
 
 | Sound | How it's made |
 |---|---|
@@ -293,17 +294,62 @@ nothing to download or license. The nature sounds are random as they go, so they
 | Brown noise | White noise through a leaky integrator, 6 dB softer each octave up: a deep rumble |
 | Ocean | Deep noise through a low-pass filter whose opening and level swell and fall on an irregular 8 to 14 second cycle, drifting a little left and right |
 | Wind | Noise through a band-pass filter whose centre and level wander on slow random curves |
+| Rain | Steady gentle rain on leaves and soft ground |
+| Stream | A small stream over rocks |
+| Thunderstorm | Heavy rain with distant rolling thunder, no sharp cracks |
+| Bonfire | A steady fire: soft crackle and a low roar, pops limited |
+| Night | Sparse distant crickets over quiet grass |
 
-No thunder, birds or crackling fire: thunder is a sudden loud sound, and synthesized birds sound
-fake. Stereo places stay within half-way left and right (hard pans are unpleasant on headphones).
-Rain, stream and night crickets were built too, but the owner found all three fake on the
-samples (2026-11-10: "ocean/brown is ok"), so they are out of this build; real CC0 recordings
-are the likely next step (the code is in this PR's history).
+No birds: synthesized birds sound fake. Stereo places in the made sounds stay within half-way
+left and right (hard pans are unpleasant on headphones). Rain, stream and night crickets were
+first made in code, but the owner found all three fake (2026-11-10), so they come from files
+instead, along with thunderstorm and bonfire, which the owner asked for the same day. Thunder and
+fire pops were ruled out at first as sudden sounds; the files keep them under the same startle
+limits as everything else (below).
+
+### Sound files (2026-11-10)
+
+The owner chose generated takes over CC0 recordings: ElevenLabs Sound Effects on the owner's paid
+plan, made in its seamless-loop mode, two takes each, picked by the owner by ear. Twelve takes
+(including a first night take the owner rejected) cost 1,200 credits.
+
+- `tools/sound-files.mjs` (needs ffmpeg, not shipped) makes each file from the picked take: laid
+  end to end three times so the filters and limiter treat it as an endless loop, resampled to
+  48 kHz, high-passed at 30 Hz, levelled to −20 LUFS and limited at −8 dBFS (2 ms look-ahead),
+  then the middle copy is kept. It writes what it measured, per file, to
+  `tools/sound-files.json`.
+- Each file is 30.5 seconds, MP3 at 128 kb/s (about 0.5 MB): the 30-second loop starts
+  0.25 seconds in, and its first 0.5 seconds are repeated after it. The app loops from 0.25
+  to 30.25 seconds, so the loop is whole, with a quarter second to spare at both ends, whether
+  or not a browser trims the MP3's encoder padding (a few milliseconds). A file that decodes
+  shorter than that isn't played.
+- The app fetches a file when it is picked, decodes it and plays it on a looping buffer source
+  into the same gain node, so fades, volume and the Sound button work as before. Only the last
+  decoded file is kept (each is about 11 MB decoded). A counter makes a slow load that has been
+  overtaken by a later pick or Off do nothing, so two loops can never play at once.
+- The service worker caches the five files at install (about 2.4 MB) in their own cache, named
+  by their hash, so app updates don't download them again; one that fails to download is
+  fetched when first played. If it is first picked offline and wasn't saved, sound turns off.
+- Measured as played (two loops): all five at −20 LUFS ±0.3, peaks −7.0 dBFS or lower, 400 ms
+  loudness at most +5.1 LU, 50 ms at most +6.2 LU. To get there the limiter cuts the loudest
+  transients by up to about 20 dB (bonfire pops), 15 dB (rain drops) and 10 dB (stream), and
+  barely touches thunderstorm and night; the owner listens to the levelled files before merge.
+- **License:** the files are not under the repo's MIT license. ElevenLabs' sound-effects terms
+  let a paid plan use output commercially inside an app, but not hand it out as separate audio
+  files, samples or a sound library. `audio/LICENSE.md` says so; no attribution is required.
+- **Fable red team (2026-11-10):** taken: a counter so overtaken loads never start a second
+  loop (two at once would be +6 dB with no clamp); a stale failure no longer stops the current
+  sound; Off then another sound mid-fade now starts the new one; one decoded file kept, not all
+  five (about 58 MB); sound files in their own service-worker cache; a quarter second to spare
+  at the loop's end; stale text fixed. Raised for the owner: a public repo makes the files
+  downloadable on their own, which the terms arguably forbid. The owner chose (2026-11-10) to
+  keep the repo public with the files marked not-MIT, over a private repo, R2 or CC0.
+  Not taken: re-measuring in CI with ffmpeg (the hash check catches a changed file).
 
 ### Controls
 
 - A **Sound** button on the bar (pressed while sound plays) opens the Sound panel, a modal
-  dialog like About: native radio buttons for Off and the five sounds, a volume slider, and
+  dialog like About: native radio buttons for Off and the ten sounds, a volume slider, and
   Close. Picking a sound plays it. Arrow keys and Escape work inside it as usual (the art's
   arrow and Space keys are ignored in dialogs).
 - **M** turns sound on and off (the last sound picked), also with the panel open.
@@ -332,12 +378,14 @@ measured on the stereo output at full volume (BS.1770 K-weighted, gated):
   Equal LUFS isn't equal loudness to every ear: brown noise sounds quieter on phone speakers.
 - **Default volume 50%** (−12 dB). The slider is in perceptual steps (gain is the slider value
   squared), and the top of the slider is the levelled sound, never more.
-- **No peaks:** sample peaks under −6 dBFS in the test, and the audio thread clamps every sample
-  at −6 dBFS whatever happens. No compressor (the browser's one adds gain).
+- **No peaks:** sample peaks under −6 dBFS in the test. The audio thread clamps every generated
+  sample at −6 dBFS whatever happens; sound files have no clamp when they play, so they are
+  limited at −8 dBFS when they are made and measured after encoding. No compressor (the browser's one adds gain).
 - **No sudden sounds:** 400 ms loudness stays within 6 LU of the sound's average, and 50 ms
-  loudness within 10 LU, so waves and gusts can't startle.
+  loudness within 10 LU, so waves, gusts, thunder and fire pops can't startle.
 - **Fades:** sound fades in over 2 seconds; switching fades out over half a second and back in;
-  turning off fades out over half a second, then stops the generator and suspends the audio.
+  turning off fades out over half a second, then stops the generator or file and suspends the
+  audio.
 - **No rumble or hum:** a 30 Hz high-pass on every sound, no DC offset.
 - The panel says "Keep it low, especially with headphones and for kids", and About adds "for a
   sleeping baby, keep the device across the room and quiet."
@@ -351,9 +399,10 @@ rule above is untouched. Art that reacts to sound comes later, under the same li
 ### Files and offline
 
 ```
-src/sounds.js   the five generators (pure, seeded, 48 kHz), and the AudioWorklet processor that runs them
-src/sound.js    the Sound panel, the audio graph (worklet, then gain for volume and fades) and its settings
-tools/loudness.mjs, tools/sound-levels.mjs   BS.1770 meter and the levelling tool (not shipped)
+src/sounds.js   the sound list, the five generators (pure, seeded, 48 kHz), and the AudioWorklet processor that runs them
+audio/*.mp3     the five sound files (not MIT: see audio/LICENSE.md)
+src/sound.js    the Sound panel, the audio graph (worklet or file loop, then gain for volume and fades) and its settings
+tools/loudness.mjs, tools/sound-levels.mjs, tools/sound-files.mjs   BS.1770 meter and the levelling tools (not shipped)
 ```
 
 One file holds both the generators and the worklet, so the worklet needs no `import` (support
@@ -364,7 +413,8 @@ Where AudioWorklet is missing, the Sound button is hidden.
 
 ### Privacy
 
-Unchanged: generated on the device, no files fetched, no microphone. The last sound and volume
+Nothing leaves the device and there is no microphone. The five sound files come from the app's
+own site and are cached like every other file. The last sound and volume
 join the other settings in `localStorage`.
 
 ### Tests
@@ -376,7 +426,11 @@ join the other settings in `localStorage`.
    −6 dBFS; 400 ms loudness within 6 LU and 50 ms loudness within 10 LU of the average.
 3. Noise colors, 250 Hz to 4 kHz: white 0, pink −3 and brown −6 dB an octave, ±1.
 4. Volume: 0 is silent, the top is gain 1, the default −12 dB; the clamp is at −6 dBFS.
-5. The existing PWA (new files cached) and no-network tests cover the new files.
+5. The existing PWA (new files cached) and no-network tests cover the new files; the
+   no-network test allows only the player's own `audio/` files.
+6. Sound files (`test/sound-files.test.mjs`): each file's hash matches its measurements in
+   `tools/sound-files.json`, and those meet rule 2 (CI has no MP3 decoder, so
+   `tools/sound-files.mjs` measures them when it makes them).
 
 Checked in Playwright (Chromium, autoplay blocked) before the PR: no audio context exists until
 the Sound panel is used (taps on the art and arrow keys don't make one), the panel works by
@@ -386,8 +440,8 @@ and listening to the samples (done 2026-11-10).
 
 ### Open questions (defaults in brackets)
 
-1. Rain, stream and night crickets: CC0 recordings (about 0.5 MB each, cached offline, each
-   file's license recorded) in a follow-up? [Yes, after this ships.]
+1. Rain, stream and night crickets: answered 2026-11-10, generated loops instead of CC0
+   recordings, plus thunderstorm and bonfire (see "Sound files").
 2. One sound at a time, or a mixer to layer them (ocean over brown noise)? [One at a time.]
 3. A sleep timer that fades out after 15, 30 or 60 minutes? [Next PR, not this one.]
 4. Must sound keep playing on a locked phone? [No: desktops keep it going, phones resume on

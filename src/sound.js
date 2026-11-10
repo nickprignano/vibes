@@ -1,7 +1,7 @@
-// Ambient sound: the Sound panel and the audio graph (generator worklet, then a
-// gain node for volume and fades). Nothing plays until the panel or M is used,
+// Ambient sound: the Sound panel and the audio graph (generator worklet, or a looping
+// sound file, then a gain node for volume and fades). Nothing plays until the panel or M is used,
 // since browsers only allow audio after a tap or key.
-import { DEFAULT_VOLUME, SAMPLE_RATE, SOUNDS, gainFor } from "./sounds.js";
+import { DEFAULT_VOLUME, LEAD, LOOP, SAMPLE_RATE, SOUNDS, gainFor } from "./sounds.js";
 
 const FADE_IN = 2;
 const FADE_OUT = 0.5;
@@ -26,6 +26,10 @@ export function setupSound({ button, dialog, settings, save }) {
   let ready = null; // resolves to { node, gain } once the worklet has loaded
   let playing = false; // wanted on; the browser may still have suspended it
   let stopping = 0;
+  let turn = 0; // counts plays and stops, so a slow load can tell it has been overtaken
+  let feeding = null; // the id of the sound feeding the gain node, if any
+  let source = null; // the looping sound file now playing, if any
+  let loaded = null; // { id, buffer }: the last sound file, kept while it may play again
 
   const running = () => playing && ctx?.state === "running";
   function show() {
@@ -54,6 +58,43 @@ export function setupSound({ button, dialog, settings, save }) {
     return ready;
   }
 
+  function silence(node) {
+    node.port.postMessage(null);
+    source?.stop();
+    source = null;
+    feeding = null;
+  }
+
+  // Switches what feeds the gain node to this sound: the generator, or a sound file's
+  // loop (fetched and decoded the first time; only one is kept, to spare memory).
+  async function start(id, node, gain, mine) {
+    silence(node);
+    const { file } = SOUNDS.find((s) => s.id === id);
+    if (!file) {
+      node.port.postMessage({ id, seed: Math.floor(Math.random() * 2 ** 32) });
+      feeding = id;
+      return;
+    }
+    if (loaded?.id !== id) {
+      const load = fetch(file)
+        .then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(file))))
+        .then((data) => ctx.decodeAudioData(data));
+      loaded = { id, buffer: load };
+      load.catch(() => loaded?.buffer === load && (loaded = null)); // offline before it was saved: try again next time
+    }
+    const buffer = await loaded.buffer;
+    if (buffer.duration < LEAD + LOOP) throw new Error(`${file} is short`);
+    if (mine !== turn) return;
+    source = ctx.createBufferSource();
+    source.buffer = buffer;
+    source.loop = true;
+    source.loopStart = LEAD;
+    source.loopEnd = LEAD + LOOP;
+    source.connect(gain);
+    source.start(0, LEAD);
+    feeding = id;
+  }
+
   function fade(gain, to, seconds) {
     const now = ctx.currentTime;
     gain.gain.cancelScheduledValues(now);
@@ -63,31 +104,41 @@ export function setupSound({ button, dialog, settings, save }) {
 
   async function play(id) {
     clearTimeout(stopping);
-    const switching = playing && id !== settings.sound;
     settings.sound = id;
     save(settings);
     playing = true;
+    const mine = ++turn;
     const { node, gain } = await open();
-    // A new sound fades through quiet, so nothing starts abruptly.
-    if (switching) {
-      fade(gain, 0, FADE_OUT);
-      await new Promise((done) => setTimeout(done, FADE_OUT * 1000));
-      if (!playing || settings.sound !== id) return;
+    if (mine !== turn) return;
+    if (feeding !== id) {
+      // A new sound fades through quiet, so nothing starts abruptly.
+      if (feeding && gain.gain.value > 0) {
+        fade(gain, 0, FADE_OUT);
+        await new Promise((done) => setTimeout(done, FADE_OUT * 1000));
+        if (mine !== turn) return;
+      }
+      try {
+        await start(id, node, gain, mine);
+      } catch {
+        if (mine === turn) stop();
+        return;
+      }
+      if (mine !== turn) return;
     }
-    if (switching || gain.gain.value === 0) node.port.postMessage({ id, seed: Math.floor(Math.random() * 2 ** 32) });
     fade(gain, gainFor(settings.volume), FADE_IN);
     show();
   }
 
   async function stop() {
     playing = false;
+    turn++;
     show();
     if (!ready) return;
     const { node, gain } = await ready;
     fade(gain, 0, FADE_OUT);
-    // Once faded, stop the generator and let the device rest.
+    // Once faded, stop the generator or file and let the device rest.
     stopping = setTimeout(() => {
-      node.port.postMessage(null);
+      silence(node);
       ctx.suspend();
     }, FADE_OUT * 1000 + 100);
   }

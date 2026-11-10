@@ -4,13 +4,14 @@ Vibes is an original screensaver page: plain JavaScript and canvas, no build ste
 static files. It plays the line-art library in prignano-theme (`art/`). The plan is in
 [docs/SPEC.md](docs/SPEC.md); read it first.
 
-- It's original work under the MIT license. No names, art, sounds or trademarks from screensaver
-  products or toys; the words test keeps the banned names out of shipped files.
+- It's original work under the MIT license, except the sound files in `audio/` (generated with
+  ElevenLabs on the owner's plan; see `audio/LICENSE.md`). No names, art, sounds or trademarks
+  from screensaver products or toys; the words test keeps the banned names out of shipped files.
 - Made for all ages. Keep the safety rules in the spec true: no flashes, the stripe-pattern
   limits, Calm and reduced motion. Styles live in prignano-theme and change there, after its flash
   scan passes.
 - Nothing leaves the device: no analytics, accounts, server or network calls beyond the pinned
-  theme files.
+  theme files and the app's own sound files.
 - Never put API keys, account or tenant IDs, domains other than the app's own, IPs, emails,
   secrets, or employer, customer or private-project names in the repo, commits, issues or PR
   text.

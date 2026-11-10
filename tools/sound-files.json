@@ -1,0 +1,47 @@
+{
+  "rain": {
+    "source": "b81148feccb4b36d9641f1e45c1f3da9ee655280169a54b64d96c0342b877468",
+    "sha256": "8207484749d0be0d25643bc517cfdc0ed3cfef65648873c9af911fc96b36cfe3",
+    "integrated": -20.25,
+    "momentaryOver": 1.27,
+    "shortOver": 3.37,
+    "peak": -7.43,
+    "seconds": 30.5
+  },
+  "stream": {
+    "source": "97dee1f25c345af867ce1644ab2b2e6ac10a33d40820136a5001bb6f670868f9",
+    "sha256": "2265ee12902c6c5aacc26cc312de7008a63a4cb168c31a5143aa43f5b303445f",
+    "integrated": -20.13,
+    "momentaryOver": 1.49,
+    "shortOver": 4.55,
+    "peak": -7.61,
+    "seconds": 30.5
+  },
+  "thunderstorm": {
+    "source": "897e9c8ee0ccbb6ddbd63a22a31eccc49a3f8c188275f0b3bfcb2a50300cf1f0",
+    "sha256": "842f26f37b58b61c00cabcf1ea58de4cb28d8256b05b5ef9f6aa83f184805752",
+    "integrated": -20,
+    "momentaryOver": 1.23,
+    "shortOver": 2.26,
+    "peak": -8.08,
+    "seconds": 30.5
+  },
+  "bonfire": {
+    "source": "0ea40a155eda0de0da68fb998ae23d46c0cd9ea8156579605a700fd7f2518ac2",
+    "sha256": "f6b6c924fa1dedfaedfb2acf5288ff7388b12708b907e0f1e6052dc0c078bb7a",
+    "integrated": -20.27,
+    "momentaryOver": 1.43,
+    "shortOver": 4.68,
+    "peak": -7.09,
+    "seconds": 30.5
+  },
+  "night": {
+    "source": "1be07b73d10b7e648911997dc1bd50e0a5fa3762b334de0d4edf0ddc07002cc9",
+    "sha256": "e15725a7f074a68f29e88e66a4462b1aab6a922759116bdc2a3f5e550dab3e32",
+    "integrated": -19.97,
+    "momentaryOver": 5.04,
+    "shortOver": 6.14,
+    "peak": -7.09,
+    "seconds": 30.5
+  }
+}
