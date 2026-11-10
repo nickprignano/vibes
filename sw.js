@@ -1,7 +1,7 @@
 // Service worker: keeps a copy of every file so the installed app works offline.
 // VERSION, FILES and EXTRA are written by `node tools/sw-version.mjs`; a test fails if they're stale.
 
-const VERSION = '20231becadd8';
+const VERSION = 'ca29a745267c';
 const FILES = [
   'icons/apple-touch-icon.png',
   'icons/icon-192.png',

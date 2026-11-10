@@ -283,7 +283,7 @@ Instrumentals, a mood per style and art that reacts to sound come later.
 
 ### What you hear
 
-Eight ambient sounds, one at a time, all made live in code with Web Audio: no recordings,
+Five ambient sounds, one at a time, all made live in code with Web Audio: no recordings,
 nothing to download or license. The nature sounds are random as they go, so they never loop.
 
 | Sound | How it's made |
@@ -291,21 +291,19 @@ nothing to download or license. The nature sounds are random as they go, so they
 | White noise | Even random samples, the same energy at every pitch |
 | Pink noise | White noise through Paul Kellet's published pink filter, 3 dB softer each octave up |
 | Brown noise | White noise through a leaky integrator, 6 dB softer each octave up: a deep rumble |
-| Rain | A soft hiss bed with short decaying drop ticks scattered at random in time, pitch and stereo place |
 | Ocean | Deep noise through a low-pass filter whose opening and level swell and fall on an irregular 8 to 14 second cycle, drifting a little left and right |
 | Wind | Noise through a band-pass filter whose centre and level wander on slow random curves |
-| Stream | Mid-band noise with fast small random movement, plus soft rising bubble blips |
-| Night crickets | Seven crickets (short pulse groups of a 4.2 to 5 kHz tone, each with its own rate and place) over a faint low wind bed |
 
 No thunder, birds or crackling fire: thunder is a sudden loud sound, and synthesized birds sound
 fake. Stereo places stay within half-way left and right (hard pans are unpleasant on headphones).
-Stream and Night crickets are the riskiest to sound fake; they ship only if the owner likes the
-samples.
+Rain, stream and night crickets were built too, but the owner found all three fake on the
+samples (2026-11-10: "ocean/brown is ok"), so they are out of this build; real CC0 recordings
+are the likely next step (the code is in this PR's history).
 
 ### Controls
 
 - A **Sound** button on the bar (pressed while sound plays) opens the Sound panel, a modal
-  dialog like About: native radio buttons for Off and the eight sounds, a volume slider, and
+  dialog like About: native radio buttons for Off and the five sounds, a volume slider, and
   Close. Picking a sound plays it. Arrow keys and Escape work inside it as usual (the art's
   arrow and Space keys are ignored in dialogs).
 - **M** turns sound on and off (the last sound picked), also with the panel open.
@@ -329,7 +327,7 @@ Vibes can't know how loud a device or headphones play, so the rules cover what i
 measured on the stereo output at full volume (BS.1770 K-weighted, gated):
 
 - **Gentle and even:** each sound is levelled to −20 LUFS, or lower where that keeps its peaks
-  under −6 dBFS (brown noise, ocean and crickets end up 2 to 4 LU lower). That is about 6 dB
+  under −6 dBFS (brown noise and ocean end up 2 to 4 LU lower). That is about 6 dB
   under typical streamed music, so at the same device volume Vibes plays quieter than music.
   Equal LUFS isn't equal loudness to every ear: brown noise sounds quieter on phone speakers.
 - **Default volume 50%** (−12 dB). The slider is in perceptual steps (gain is the slider value
@@ -337,7 +335,7 @@ measured on the stereo output at full volume (BS.1770 K-weighted, gated):
 - **No peaks:** sample peaks under −6 dBFS in the test, and the audio thread clamps every sample
   at −6 dBFS whatever happens. No compressor (the browser's one adds gain).
 - **No sudden sounds:** 400 ms loudness stays within 6 LU of the sound's average, and 50 ms
-  loudness within 10 LU, so drops, waves, crickets and gusts can't startle.
+  loudness within 10 LU, so waves and gusts can't startle.
 - **Fades:** sound fades in over 2 seconds; switching fades out over half a second and back in;
   turning off fades out over half a second, then stops the generator and suspends the audio.
 - **No rumble or hum:** a 30 Hz high-pass on every sound, no DC offset.
@@ -353,7 +351,7 @@ rule above is untouched. Art that reacts to sound comes later, under the same li
 ### Files and offline
 
 ```
-src/sounds.js   the eight generators (pure, seeded, 48 kHz), and the AudioWorklet processor that runs them
+src/sounds.js   the five generators (pure, seeded, 48 kHz), and the AudioWorklet processor that runs them
 src/sound.js    the Sound panel, the audio graph (worklet, then gain for volume and fades) and its settings
 tools/loudness.mjs, tools/sound-levels.mjs   BS.1770 meter and the levelling tool (not shipped)
 ```
@@ -384,14 +382,13 @@ Checked in Playwright (Chromium, autoplay blocked) before the PR: no audio conte
 the Sound panel is used (taps on the art and arrow keys don't make one), the panel works by
 keyboard without moving the art, M turns sound off and on, and sound plays offline after a
 reload. Left to the owner: a real iPhone and Android phone (silent switch, lock screen, a call),
-and listening to the samples.
+and listening to the samples (done 2026-11-10).
 
 ### Open questions (defaults in brackets)
 
-1. Do the samples sound good enough, especially Stream and Night crickets? [Ship all eight if
-   yes; drop the ones that sound fake, or swap them for CC0 recordings with each file's license
-   recorded, about 0.5 MB each.]
-2. One sound at a time, or a mixer to layer them (rain over brown noise)? [One at a time.]
+1. Rain, stream and night crickets: CC0 recordings (about 0.5 MB each, cached offline, each
+   file's license recorded) in a follow-up? [Yes, after this ships.]
+2. One sound at a time, or a mixer to layer them (ocean over brown noise)? [One at a time.]
 3. A sleep timer that fades out after 15, 30 or 60 minutes? [Next PR, not this one.]
 4. Must sound keep playing on a locked phone? [No: desktops keep it going, phones resume on
    return. Locked-phone playback needs routing through an audio element and a real-device
@@ -412,8 +409,8 @@ Found 12 issues in the draft. Taken:
 - **One sample rate:** the context runs at 48 kHz, so filters and tests cover one rate.
 - **Autoplay:** only the panel and M start sound, the context resumes before any wait, and the
   button follows the context's real state.
-- **Startle test:** a 50 ms rule added to the 400 ms one; drop ticks capped.
-- **Sound quality:** Stream and Night crickets ship only after the owner listens; pans limited.
+- **Startle test:** a 50 ms rule added to the 400 ms one; drop ticks capped (rain, since cut).
+- **Sound quality:** stream and crickets were to ship only after the owner listened (the owner cut them, and rain); pans limited.
 - **Hearing claims softened;** baby-sleep advice added; sleep timer named as the first
   follow-up.
 - **Worklet imports:** one file, no import inside the worklet.
