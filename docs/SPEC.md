@@ -342,7 +342,8 @@ plan, made in its seamless-loop mode, two takes each, picked by the owner by ear
   sound; Off then another sound mid-fade now starts the new one; one decoded file kept, not all
   five (about 58 MB); sound files in their own service-worker cache; a quarter second to spare
   at the loop's end; stale text fixed. Raised for the owner: a public repo makes the files
-  downloadable on their own, which the terms arguably forbid (the owner's call, in the PR).
+  downloadable on their own, which the terms arguably forbid. The owner chose (2026-11-10) to
+  keep the repo public with the files marked not-MIT, over a private repo, R2 or CC0.
   Not taken: re-measuring in CI with ffmpeg (the hash check catches a changed file).
 
 ### Controls
