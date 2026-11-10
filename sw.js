@@ -1,7 +1,7 @@
 // Service worker: keeps a copy of every file so the installed app works offline.
 // VERSION, FILES and EXTRA are written by `node tools/sw-version.mjs`; a test fails if they're stale.
 
-const VERSION = 'b34334e2c341';
+const VERSION = 'ca29a745267c';
 const FILES = [
   'icons/apple-touch-icon.png',
   'icons/icon-192.png',
@@ -13,6 +13,8 @@ const FILES = [
   'src/cycle.js',
   'src/main.js',
   'src/settings.js',
+  'src/sound.js',
+  'src/sounds.js',
   'styles.css',
 ];
 // The shared theme and line-art library, pinned to a commit so they never change.

@@ -38,18 +38,28 @@
     <button type="button" data-do="pause" aria-pressed="false">Pause</button>
     <button type="button" data-do="next" aria-label="Next piece">›</button>
     <button type="button" data-do="calm" aria-pressed="false">Calm</button>
+    <button type="button" data-do="sound" aria-pressed="false">Sound</button>
     <button type="button" data-do="awake" aria-pressed="true">Keep screen on</button>
     <button type="button" data-do="fullscreen" aria-pressed="false">Full screen</button>
     <button type="button" data-do="about">About</button>
     <button type="button" data-do="update" hidden>Update</button>
   </nav>
 
+  <dialog id="sound" aria-labelledby="sound-title">
+    <h2 id="sound-title">Sound</h2>
+    <fieldset id="sound-list"><legend class="visually-hidden">Sound</legend></fieldset>
+    <label id="volume-label">Volume <input type="range" id="volume" min="0" max="100" step="5"></label>
+    <p class="hint">Made live on this device. Keep it low, especially with headphones and for kids.</p>
+    <form method="dialog"><button>Close</button></form>
+  </dialog>
+
   <dialog id="about" aria-labelledby="about-title">
     <div id="about-header"></div>
     <h2 id="about-title">About Vibes</h2>
     <p>Our line art, playing forever, like an old-school screensaver. Each piece grows in, drifts for a while, then dissolves into the next, with a new random seed every time.</p>
     <p>The art is drawn live from the same library as the project cards on prignano.ai: eighteen styles, from flow trails, wave lines and harmonographs to gear curves, roses, knots, wire solids, strange attractors, times tables, star polygons, circle lattices, Islamic-style star tilings, a rhomb tiling that never repeats, hyperbolic tilings, Voronoi cells, fractal curves, meanders and epicycles.</p>
-    <p><b>Keys:</b> left and right arrows for previous and next, Space to pause, F for full screen, C for Calm. On a phone, swipe.</p>
+    <p><b>Keys:</b> left and right arrows for previous and next, Space to pause, F for full screen, C for Calm, M for sound on and off. On a phone, swipe.</p>
+    <p><b>Sound:</b> white, pink and brown noise, ocean and wind, all made live in code on your device, never recordings. Silent until you pick one. Every sound is levelled to the same gentle loudness, with no sudden noises. Keep the volume low, especially with headphones and for kids; for a sleeping baby, keep the device across the room and quiet.</p>
     <p><b>Easy on the eyes:</b> nothing flashes, striped patterns stay faint, wide and slow, and every piece is checked frame by frame before it ships. Calm halves the speed and fades the lines. If your device asks for reduced motion, Vibes shows still pieces you can step through.</p>
     <p><b>Private:</b> nothing leaves your device. No accounts, no analytics, no tracking. Your settings stay on this device.</p>
     <p>Original work under the MIT license. <a href="https://github.com/nickprignano/vibes">Source on GitHub</a>.</p>

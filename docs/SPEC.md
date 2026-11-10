@@ -2,7 +2,7 @@
 
 Status: approved by the owner (2026-11-09) after two Fable red-team passes. The art library and
 the prignano.ai card switch are merged; this repo holds the player. Name **Vibes**, at `vibes.prignano.ai` (owner's pick,
-2026-11-09). Sound comes in v2 (owner's ask, same day).
+2026-11-09). Sound (v2) built 2026-11-10: see "v2: sound".
 
 ## What it is
 
@@ -11,7 +11,7 @@ grows in, drifts for a while, then dissolves into the next. It never ends and ne
 exactly. You can step through pieces, pause one you like, go full screen, or install it and leave
 it running on a spare screen.
 
-It is a toy, not a game: no score, no goal. v1 is silent.
+It is a toy, not a game: no score, no goal. v1 is silent; v2 adds ambient sound.
 
 ## Where "our line art" lives (checked 2026-11-09)
 
@@ -276,13 +276,147 @@ Every PR that adds or changes a style opens only after the flash scan passes for
 The owner creates the repo and adds the custom domain. Claude writes `docs/DEPLOY.md` and changes
 nothing on the account without his yes.
 
-## v2: sound (owner's ask, 2026-11-09)
+## v2: sound (owner's ask, 2026-11-09; specced and built 2026-11-10)
 
-Sounds and instrumentals, specced separately once v1 ships. Starting defaults: our own music only
-(generated live with Web Audio, or original recordings shipped as files), no streaming or
-third-party tracks; silent until you tap the sound button (browsers block autoplay anyway), with
-volume and mute remembered on the device; a mood per style; works offline. Art that reacts to the
-music stays under the same flash and pattern limits.
+The owner's ask (2026-11-10): "start with white/brown/pink noise and nature sounds."
+Instrumentals, a mood per style and art that reacts to sound come later.
+
+### What you hear
+
+Five ambient sounds, one at a time, all made live in code with Web Audio: no recordings,
+nothing to download or license. The nature sounds are random as they go, so they never loop.
+
+| Sound | How it's made |
+|---|---|
+| White noise | Even random samples, the same energy at every pitch |
+| Pink noise | White noise through Paul Kellet's published pink filter, 3 dB softer each octave up |
+| Brown noise | White noise through a leaky integrator, 6 dB softer each octave up: a deep rumble |
+| Ocean | Deep noise through a low-pass filter whose opening and level swell and fall on an irregular 8 to 14 second cycle, drifting a little left and right |
+| Wind | Noise through a band-pass filter whose centre and level wander on slow random curves |
+
+No thunder, birds or crackling fire: thunder is a sudden loud sound, and synthesized birds sound
+fake. Stereo places stay within half-way left and right (hard pans are unpleasant on headphones).
+Rain, stream and night crickets were built too, but the owner found all three fake on the
+samples (2026-11-10: "ocean/brown is ok"), so they are out of this build; real CC0 recordings
+are the likely next step (the code is in this PR's history).
+
+### Controls
+
+- A **Sound** button on the bar (pressed while sound plays) opens the Sound panel, a modal
+  dialog like About: native radio buttons for Off and the five sounds, a volume slider, and
+  Close. Picking a sound plays it. Arrow keys and Escape work inside it as usual (the art's
+  arrow and Space keys are ignored in dialogs).
+- **M** turns sound on and off (the last sound picked), also with the panel open.
+- Only the Sound panel and M start sound: taps on the art, swipes and other buttons never do.
+  The audio context is made and resumed inside that tap or key, before any wait, because Safari
+  forgets the tap across one. Reopening Vibes is silent; the last sound and volume are
+  remembered on this device.
+- The Sound button shows what the browser is actually doing (the audio context's state), not the
+  saved choice, so after a phone call or a lock it shows off when the browser has stopped it.
+- Sound has its own on and off: it keeps playing while the art is paused, in Calm and with
+  reduced motion, and when the page is hidden where the browser allows it (desktops do; locked
+  phones usually stop it). When the page comes back, Vibes tries to resume; if it can't, one tap
+  on M or the panel brings it back.
+- iPhone: where Safari supports it (`navigator.audioSession`), sound plays as media, so the
+  silent switch doesn't mute it once you've picked a sound.
+- Pressing Update reloads the page, so sound stops until you tap again.
+
+### Loudness and hearing (kid-safe)
+
+Vibes can't know how loud a device or headphones play, so the rules cover what it sends out,
+measured on the stereo output at full volume (BS.1770 K-weighted, gated):
+
+- **Gentle and even:** each sound is levelled to −20 LUFS, or lower where that keeps its peaks
+  under −6 dBFS (brown noise and ocean end up 2 to 4 LU lower). That is about 6 dB
+  under typical streamed music, so at the same device volume Vibes plays quieter than music.
+  Equal LUFS isn't equal loudness to every ear: brown noise sounds quieter on phone speakers.
+- **Default volume 50%** (−12 dB). The slider is in perceptual steps (gain is the slider value
+  squared), and the top of the slider is the levelled sound, never more.
+- **No peaks:** sample peaks under −6 dBFS in the test, and the audio thread clamps every sample
+  at −6 dBFS whatever happens. No compressor (the browser's one adds gain).
+- **No sudden sounds:** 400 ms loudness stays within 6 LU of the sound's average, and 50 ms
+  loudness within 10 LU, so waves and gusts can't startle.
+- **Fades:** sound fades in over 2 seconds; switching fades out over half a second and back in;
+  turning off fades out over half a second, then stops the generator and suspends the audio.
+- **No rumble or hum:** a 30 Hz high-pass on every sound, no DC offset.
+- The panel says "Keep it low, especially with headphones and for kids", and About adds "for a
+  sleeping baby, keep the device across the room and quiet."
+- A **sleep timer** is the one exposure control an app has; it is the first follow-up.
+
+### Safety with the art
+
+The sound never changes the art and the art never changes the sound, so every flash and pattern
+rule above is untouched. Art that reacts to sound comes later, under the same limits.
+
+### Files and offline
+
+```
+src/sounds.js   the five generators (pure, seeded, 48 kHz), and the AudioWorklet processor that runs them
+src/sound.js    the Sound panel, the audio graph (worklet, then gain for volume and fades) and its settings
+tools/loudness.mjs, tools/sound-levels.mjs   BS.1770 meter and the levelling tool (not shipped)
+```
+
+One file holds both the generators and the worklet, so the worklet needs no `import` (support
+for imports inside worklets has been uneven) and Node tests the same code that plays. About
+16 KB in all, cached by the service worker like every other file, so sound works offline. The
+audio context runs at 48 kHz on every device, so the filters and levels are tuned for one rate.
+Where AudioWorklet is missing, the Sound button is hidden.
+
+### Privacy
+
+Unchanged: generated on the device, no files fetched, no microphone. The last sound and volume
+join the other settings in `localStorage`.
+
+### Tests
+
+`node --test`, for every sound over 30 seconds at two seeds:
+
+1. Every sample a number; no DC offset; the same seed gives the same samples.
+2. Loudness at most −20 LUFS (+1.5 LU measuring slack) and no more than 5 LU under; peaks under
+   −6 dBFS; 400 ms loudness within 6 LU and 50 ms loudness within 10 LU of the average.
+3. Noise colors, 250 Hz to 4 kHz: white 0, pink −3 and brown −6 dB an octave, ±1.
+4. Volume: 0 is silent, the top is gain 1, the default −12 dB; the clamp is at −6 dBFS.
+5. The existing PWA (new files cached) and no-network tests cover the new files.
+
+Checked in Playwright (Chromium, autoplay blocked) before the PR: no audio context exists until
+the Sound panel is used (taps on the art and arrow keys don't make one), the panel works by
+keyboard without moving the art, M turns sound off and on, and sound plays offline after a
+reload. Left to the owner: a real iPhone and Android phone (silent switch, lock screen, a call),
+and listening to the samples (done 2026-11-10).
+
+### Open questions (defaults in brackets)
+
+1. Rain, stream and night crickets: CC0 recordings (about 0.5 MB each, cached offline, each
+   file's license recorded) in a follow-up? [Yes, after this ships.]
+2. One sound at a time, or a mixer to layer them (ocean over brown noise)? [One at a time.]
+3. A sleep timer that fades out after 15, 30 or 60 minutes? [Next PR, not this one.]
+4. Must sound keep playing on a locked phone? [No: desktops keep it going, phones resume on
+   return. Locked-phone playback needs routing through an audio element and a real-device
+   test.]
+
+### Fable red team (2026-11-10)
+
+Found 12 issues in the draft. Taken:
+
+- **Phones:** the silent switch would mute most iPhones, so sound plays as media where Safari
+  allows; locked-phone playback is an open question, and real-phone checks are on the owner's
+  list.
+- **Keys:** the art's arrow and Space keys would have fought a custom panel, so the panel is a
+  native dialog with radio buttons and a slider, and M is handled before the dialog check.
+- **No compressor as a limiter** (the browser's adds gain): a hard clamp at −6 dBFS instead.
+- **Loudness versus peaks:** "−20 LUFS or lower where peaks need it", measured on stereo,
+  gated; equal LUFS isn't equal loudness.
+- **One sample rate:** the context runs at 48 kHz, so filters and tests cover one rate.
+- **Autoplay:** only the panel and M start sound, the context resumes before any wait, and the
+  button follows the context's real state.
+- **Startle test:** a 50 ms rule added to the 400 ms one; drop ticks capped (rain, since cut).
+- **Sound quality:** stream and crickets were to ship only after the owner listened (the owner cut them, and rain); pans limited.
+- **Hearing claims softened;** baby-sleep advice added; sleep timer named as the first
+  follow-up.
+- **Worklet imports:** one file, no import inside the worklet.
+- Numbers for the slope test; noted that Update stops sound; Kellet credited.
+
+Not taken: nothing.
 
 ## Not in v1
 
